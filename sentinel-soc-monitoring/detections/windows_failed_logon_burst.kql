@@ -1,0 +1,14 @@
+// Windows SecurityEvent connector: EventID 4625 = failed logon.
+// Counts by computer/account/IP within 15-minute windows.
+let lookback = 1h;
+let minFailures = 10;
+SecurityEvent
+| where TimeGenerated >= ago(lookback)
+| where EventID == 4625
+| where isnotempty(Account)
+| extend SourceIP = tostring(IpAddress)
+| summarize FailureCount = count(), FirstSeen = min(TimeGenerated), LastSeen = max(TimeGenerated)
+    by Computer, Account, SourceIP, bin(TimeGenerated, 15m)
+| where FailureCount >= minFailures
+| project WindowStart = TimeGenerated, Computer, Account, SourceIP, FailureCount, FirstSeen, LastSeen
+| order by FailureCount desc

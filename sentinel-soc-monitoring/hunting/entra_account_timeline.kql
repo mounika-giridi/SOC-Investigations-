@@ -1,0 +1,8 @@
+// Replace example UPN with an account you are authorized to investigate.
+let targetUPN = "example.user@contoso.com";
+SigninLogs
+| where TimeGenerated >= ago(24h)
+| where UserPrincipalName =~ targetUPN
+| project TimeGenerated, UserPrincipalName, IPAddress, AppDisplayName, ResultType,
+          ResultDescription, ConditionalAccessStatus, Location, DeviceDetail
+| order by TimeGenerated asc
